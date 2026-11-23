@@ -14,15 +14,21 @@ let maxRadius = 40;
 
 let mouse = { x: undefined, y: undefined };
 
-window.addEventListener("mousemove", function (e) {
-  mouse.x = e.x;
-  mouse.y = e.y;
-});
+function updatePointer(e) {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+}
 
-window.addEventListener("touchmove", function (e) {
-  mouse.x = e.x;
-  mouse.y = e.y;
-});
+function resetPointer() {
+  mouse.x = undefined;
+  mouse.y = undefined;
+}
+
+window.addEventListener("pointerdown", updatePointer);
+window.addEventListener("pointermove", updatePointer);
+window.addEventListener("pointerup", resetPointer);
+window.addEventListener("pointercancel", resetPointer);
+
 
 window.addEventListener("resize", function (e) {
   canvas.width = window.innerWidth - 5;
