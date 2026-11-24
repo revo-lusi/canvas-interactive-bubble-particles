@@ -12,23 +12,47 @@ let maxRadius = 40;
 
 // Functions
 
-let mouse = { x: undefined, y: undefined };
+// let mouse = { x: undefined, y: undefined };
 
-function updatePointer(e) {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
+// function updatePointer(e) {
+//   mouse.x = e.clientX;
+//   mouse.y = e.clientY;
+// }
+
+// function resetPointer() {
+//   mouse.x = undefined;
+//   mouse.y = undefined;
+// }
+
+// window.addEventListener("pointerdown", updatePointer);
+// window.addEventListener("pointermove", updatePointer);
+// window.addEventListener("pointerup", resetPointer);
+// window.addEventListener("pointercancel", resetPointer);
+
+// Menyimpan semua jari/pointer yang aktif: Map<pointerId, {x, y}>
+const pointers = new Map();
+
+window.addEventListener("pointerdown", (e) => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+});
+
+window.addEventListener("pointermove", (e) => {
+  // Untuk mouse biasa, tetap update meski tidak diklik; untuk jari, update jika sedang menyentuh
+  if (e.pointerType === "mouse" || pointers.has(e.pointerId)) {
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  }
+});
+
+function removePointer(e) {
+  pointers.delete(e.pointerId);
 }
 
-function resetPointer() {
-  mouse.x = undefined;
-  mouse.y = undefined;
-}
-
-window.addEventListener("pointerdown", updatePointer);
-window.addEventListener("pointermove", updatePointer);
-window.addEventListener("pointerup", resetPointer);
-window.addEventListener("pointercancel", resetPointer);
-
+window.addEventListener("pointerup", removePointer);
+window.addEventListener("pointercancel", removePointer);
+// Hapus posisi mouse jika kursor keluar dari layar browser
+window.addEventListener("pointerout", (e) => {
+  if (e.pointerType === "mouse") pointers.delete(e.pointerId);
+});
 
 window.addEventListener("resize", function (e) {
   canvas.width = window.innerWidth - 5;
@@ -100,13 +124,21 @@ function Circle(x, y, stepX = 2, stepY = 2, radius = radius) {
     this.y += this.stepY;
 
     // interactivity
-    if (
-      mouse.x - this.x < 50 &&
-      mouse.x - this.x > -50 &&
-      mouse.y - this.y < 50 &&
-      mouse.y - this.y > -50 &&
-      this.radius < maxRadius
-    ) {
+    let isNear = false;
+
+    for (const pos of pointers.values()) {
+      if (
+        pos.x - this.x < 50 &&
+        pos.x - this.x > -50 &&
+        pos.y - this.y < 50 &&
+        pos.y - this.y > -50
+      ) {
+        isNear = true;
+        break;
+      }
+    }
+
+    if (isNear && this.radius < maxRadius) {
       if (
         this.x + maxRadius < innerWidth &&
         this.x + maxRadius > 0 &&
@@ -115,13 +147,14 @@ function Circle(x, y, stepX = 2, stepY = 2, radius = radius) {
       ) {
         this.radius += 1;
       }
-    } else if (this.radius > this.minRadius) {
+    } else if (!isNear && this.radius > this.minRadius) {
       this.radius -= 1;
     }
 
     this.draw();
   };
 }
+
 let circleArray = [];
 
 function init() {
