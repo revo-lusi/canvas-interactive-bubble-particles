@@ -29,7 +29,6 @@ let maxRadius = 40;
 // window.addEventListener("pointerup", resetPointer);
 // window.addEventListener("pointercancel", resetPointer);
 
-// Menyimpan semua jari/pointer yang aktif: Map<pointerId, {x, y}>
 const pointers = new Map();
 
 window.addEventListener("pointerdown", (e) => {
@@ -104,10 +103,7 @@ function Circle(x, y, stepX = 2, stepY = 2, radius = radius) {
     ctx.beginPath();
     ctx.fillStyle = this.color;
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 2;
     ctx.fill();
-    ctx.stroke();
   };
 
   this.update = function () {
@@ -173,6 +169,23 @@ function init() {
 
 function animate() {
   ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+      let isNear = false;
+
+    // Hanya jalankan pengecekan jika ada jari/kursor di layar
+    if (pointers.size > 0) {
+      for (const pos of pointers.values()) {
+        if (
+          pos.x - this.x < 50 &&
+          pos.x - this.x > -50 &&
+          pos.y - this.y < 50 &&
+          pos.y - this.y > -50
+        ) {
+          isNear = true;
+          break;
+        }
+      }
+    }
 
   for (let i = 0; i < circleArray.length; i++) {
     circleArray[i].update();
