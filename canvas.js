@@ -156,7 +156,10 @@ let circleArray = [];
 function init() {
   circleArray = [];
 
-  for (let i = 0; i < 900; i++) {
+  // Jika layar HP (< 768px) pakai 400 lingkaran, jika laptop pakai 900
+  const jumlahLingkaran = window.innerWidth < 768 ? 450 : 900;
+
+  for (let i = 0; i < jumlahLingkaran; i++) {
     let radius = Math.random() * 4 + 1;
     let x = Math.random() * (canvas.width - radius * 2) + radius;
     let y = Math.random() * (canvas.height - radius * 2) + radius;
